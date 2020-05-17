@@ -17,6 +17,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+
 /*
 Fragen 4. b)
 
@@ -47,10 +48,6 @@ public class FilePictureDatasource implements PictureDatasource {
     private File newFile;
     private File tempFile;
 
-    static Logger logger;
-    private FileHandler fileHandler;
-
-
 
     /**
      * Creates the FilePictureDatasource with the given file as datafile.
@@ -63,27 +60,12 @@ public class FilePictureDatasource implements PictureDatasource {
         this.newFile = new File(filepath);
         checkAndCreateFile();
         this.tempFile = new File("handout/PictureDB/db/" + "temp_" + newFile.getName());
-
-        logger = Logger.getLogger("MyLog");
-
-        try {
-
-            // This block configure the logger with handler and formatter
-            fileHandler = new FileHandler("handout/PictureDB/logger/picturedb.log");
-            logger.addHandler(fileHandler);
-            SimpleFormatter formatter = new SimpleFormatter();
-            fileHandler.setFormatter(formatter);
-
-            logger.info("First Log");
-
-        } catch (SecurityException | IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
     public void insert(Picture picture) {
         boolean inserted = false;
+
         try (BufferedReader in = new BufferedReader(
             new InputStreamReader(new FileInputStream(newFile), CHARSET));
              BufferedWriter out = new BufferedWriter(
@@ -95,28 +77,22 @@ public class FilePictureDatasource implements PictureDatasource {
             while ((record = in.readLine()) != null) {
                 int id = parseId(record);
                 maxId = Math.max(id, maxId);
-                logger.fine("max item found");
                 out.write(record);
                 out.newLine();
-                logger.fine("New Inputstreap, Outputstream created");
             }
             // set new Id to picture and add new picture record
             picture.setId(maxId+1);
-            logger.fine("maxId incremented by 1");
             out.write(writePicture(picture));
             out.newLine();
             inserted = true;
         } catch (IOException e) {
-            logger.warning("File operation failed: insert(item): " + picture);
             throw new RuntimeException("File operation failed: insert(item): " + picture, e);
         } finally {
             // if the insert was successful move tempSource to dataSource file
             if (inserted) {
                 swapFiles();
-                logger.fine("Files swapped");
             } else {
                 cleanupTemp();
-                logger.fine("Temp cleanup done");
             }
         }
     }
@@ -136,28 +112,22 @@ public class FilePictureDatasource implements PictureDatasource {
                 if (!updated && record.startsWith(prefix)) {
                     out.write(writePicture(picture));
                     updated = true;
-                    logger.fine("Old record to update found");
                 } else {
                     out.write(record);
                 }
                 out.newLine();
-                logger.fine("New Inputstreap, Outputstream created");
             }
             if (!updated) {
-                logger.warning("Updateing picture failed, no rows affected.");
                 throw new IOException("Updateing picture failed, no rows affected.");
             }
         } catch (IOException e) {
-            logger.warning("File operation failed: insert(item): " + picture);
             throw new RuntimeException("File operation failed: insert(item): " + picture, e);
         } finally {
             // if the update was successful move tempSource to dataSource file
             if (updated) {
                 swapFiles();
-                logger.fine("Files swapped");
             } else {
                 cleanupTemp();
-                logger.fine("Temp cleanup done");
             }
         }
     }
@@ -177,29 +147,23 @@ public class FilePictureDatasource implements PictureDatasource {
                 if (!deleted && record.startsWith(prefix)) {
                     // do write nothing
                     deleted = true;
-                    logger.fine("Old record to delete found");
 
                 } else {
                     out.write(record);
                     out.newLine();
-                    logger.fine("New Record written");
                 }
             }
             if (!deleted) {
-                logger.warning("Deleting picture failed, no rows affected.");
                 throw new IOException("Deleting picture failed, no rows affected.");
             }
         } catch (IOException e) {
-            logger.warning("File operation failed: delete(item): " + picture);
             throw new RuntimeException("File operation failed: delete(item): " + picture, e);
         } finally {
             // if the delete was successful move tempSource to dataSource file
             if (deleted) {
                 swapFiles();
-                logger.fine("Files swapped");
             } else {
                 cleanupTemp();
-                logger.fine("Temp cleanup done");
             }
         }
     }
@@ -214,7 +178,6 @@ public class FilePictureDatasource implements PictureDatasource {
                 count++;
             }
         } catch (IOException e) {
-            logger.warning("File operation failed");
             throw new RuntimeException("File operation failed: count(): ", e);
         }
         return count;
@@ -232,13 +195,10 @@ public class FilePictureDatasource implements PictureDatasource {
                 if (record.startsWith(prefix)) {
                     pict = parsePicture(record);
                 }
-                logger.fine("Record found with id: " + id);
             }
         } catch (IOException | ParseException e) {
-            logger.warning("File operation failed: findById(id): " + id);
             throw new RuntimeException("File operation failed: findById(id): " + id, e);
         }
-        logger.fine("Picture returned");
         return pict;
 
     }
@@ -254,9 +214,7 @@ public class FilePictureDatasource implements PictureDatasource {
                 Picture pict = parsePicture(record);
                 pictures.add(pict);
             }
-            logger.fine("All pictures found and added to collection.");
         } catch (IOException | ParseException e) {
-            logger.warning("File operation failed: findAll()");
             throw new RuntimeException("File operation failed: findAll(): ", e);
         }
         return pictures;
@@ -280,10 +238,8 @@ public class FilePictureDatasource implements PictureDatasource {
                 }
             }
         } catch (IOException | ParseException e) {
-            logger.warning("File operation failed: findByPosition()");
             throw new RuntimeException("File operation failed: findByPosition(): ", e);
         }
-        logger.fine("Pictures returned");
         return pictures;
     }
 
@@ -348,3 +304,4 @@ public class FilePictureDatasource implements PictureDatasource {
     }
 
 }
+

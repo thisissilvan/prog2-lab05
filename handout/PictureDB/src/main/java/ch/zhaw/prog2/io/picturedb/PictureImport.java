@@ -24,6 +24,7 @@ public class PictureImport {
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static PrintWriter out = new PrintWriter(System.out, true);
     private DataSource ds;
+    private static Logger logger;
 
     public static void main (String[] args) throws IOException {
         PictureDatasource dataSource = new FilePictureDatasource(PICTUREDB);
@@ -31,24 +32,44 @@ public class PictureImport {
         dataSource.insert(picture);
         Picture readPicture = dataSource.findById(picture.getId());
 
+        logger = Logger.getLogger("MyLog");
+        FileHandler fh;
+
+        try {
+
+            // This block configure the logger with handler and formatter
+            fh = new FileHandler("handout/PictureDB/logger/picturedb.log");
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+
+            // the following statement is used to log any messages
+            logger.info("My first log");
+
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         if (readPicture != null) {
-            out.println("The following pictures has been saved: ");
+            logger.info("The following pictures has been saved: ");
             out.println(readPicture);
         } else {
-            out.println("Picture with id=" + picture.getId() + " not found.");
+            logger.warning("Picture with id=" + picture.getId() + " not found.");
         }
 
         Collection<Picture> pictures = dataSource.findAll();
-        System.out.println("Pictures:");
+        logger.info("Pictures:");
         for (Picture pict : pictures) {
-            System.out.println(picture.toString());
+            logger.fine(picture.toString());
         }
     }
 
     static Picture createPicture() {
         // asks the values for the objects
-        out.println("** Create a new picture **");
+        System.out.println("** Create a new picture **");
         String urlString = prompt("Picture URL: ");
         URL url = null;
         try {
@@ -63,20 +84,20 @@ public class PictureImport {
         try {
             date = df.parse(prompt("Picture time ("+DATE_FORMAT+"): "));
         } catch (ParseException e) {
-            out.println("Unknown date format. Using "+date.toString());
+            System.out.println("Unknown date format. Using "+date.toString());
         }
 
         float longitude = 0.0f;
         try {
             longitude = Float.parseFloat(prompt("Picture position longitude: "));
         } catch (NumberFormatException e) {
-            out.println("Unknown number format. Using " + longitude);
+            System.out.println("Unknown number format. Using " + longitude);
         }
         float latitude = 0.0f;
         try {
             latitude = Float.parseFloat(prompt("Picture position latitude: "));
         } catch (NumberFormatException e) {
-            out.println("Unknown number format. Using " + latitude);
+            System.out.println("Unknown number format. Using " + latitude);
         }
 
 
@@ -88,8 +109,8 @@ public class PictureImport {
     static String prompt(String prompt) {
         try {
             StringBuffer buffer = new StringBuffer();
-            System.out.print(prompt);
-            System.out.flush();
+            System.out.println(prompt);
+            System.out.println();
             InputStreamReader in = new InputStreamReader(System.in);
             int c = in.read();
             while (c != '\n' && c != -1) {

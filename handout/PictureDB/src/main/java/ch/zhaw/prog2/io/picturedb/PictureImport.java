@@ -11,13 +11,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /* This test-application reads some picture data from terminal,
  * saves it to the datasource, read it from the DB and prints the result
  */
 
 public class PictureImport {
-    private static final String PICTUREDB = "db/picture-data.csv";
+    private static final String PICTUREDB = "handout/PictureDB/db/picture-data.csv";
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static PrintWriter out = new PrintWriter(System.out, true);
     private DataSource ds;
@@ -27,6 +30,8 @@ public class PictureImport {
         Picture picture = createPicture();
         dataSource.insert(picture);
         Picture readPicture = dataSource.findById(picture.getId());
+
+
         if (readPicture != null) {
             out.println("The following pictures has been saved: ");
             out.println(readPicture);
@@ -73,6 +78,8 @@ public class PictureImport {
         } catch (NumberFormatException e) {
             out.println("Unknown number format. Using " + latitude);
         }
+
+
 
         return new Picture(url, new Date(), title, longitude, latitude);
     }

@@ -28,6 +28,8 @@ subprojects {
     // include JUnit5 tests by default
     dependencies {
         testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
+        // https://mvnrepository.com/artifact/org.mockito/mockito-core
+        testCompile group: 'org.mockito', name: 'mockito-core', version: '2.1.0'
     }
 
     test {
